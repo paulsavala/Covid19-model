@@ -13136,23 +13136,7 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">ipywidgets</span> <span class="kn">import</span> <span class="n">VBox</span><span class="p">,</span> <span class="n">Label</span><span class="p">,</span> <span class="n">HTML</span><span class="p">,</span> <span class="n">Text</span>
 
 <span class="kn">import</span> <span class="nn">nbinteract</span> <span class="k">as</span> <span class="nn">nbi</span>
-</pre></div>
 
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;legend.fontsize&#39;</span><span class="p">:</span> <span class="s1">&#39;x-large&#39;</span><span class="p">,</span>
           <span class="s1">&#39;figure.figsize&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
          <span class="s1">&#39;axes.labelsize&#39;</span><span class="p">:</span> <span class="s1">&#39;x-large&#39;</span><span class="p">,</span>
@@ -13160,44 +13144,9 @@ div#notebook {
          <span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">:</span><span class="s1">&#39;x-large&#39;</span><span class="p">,</span>
          <span class="s1">&#39;ytick.labelsize&#39;</span><span class="p">:</span><span class="s1">&#39;x-large&#39;</span><span class="p">}</span>
 <span class="n">pylab</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-</pre></div>
 
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
-
-<span class="c1"># DEFAULTS</span>
 <span class="n">N</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">NUM_DAYS</span> <span class="o">=</span> <span class="mi">30</span> <span class="o">*</span> <span class="mi">3</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 
 <span class="k">def</span> <span class="nf">diff_eqn</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
     <span class="n">S</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">y</span>
@@ -13205,23 +13154,6 @@ div#notebook {
     <span class="n">dIdt</span> <span class="o">=</span> <span class="n">beta</span><span class="o">/</span><span class="n">N</span> <span class="o">*</span> <span class="n">S</span> <span class="o">*</span> <span class="n">I</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">I</span> 
     <span class="n">dRdt</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">I</span>
     <span class="k">return</span> <span class="n">dSdt</span><span class="p">,</span> <span class="n">dIdt</span><span class="p">,</span> <span class="n">dRdt</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 
 <span class="k">def</span> <span class="nf">sir_model</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">num_days</span><span class="o">=</span><span class="n">NUM_DAYS</span><span class="p">):</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_days</span><span class="p">,</span> <span class="n">num_days</span><span class="p">)</span>
@@ -13234,23 +13166,6 @@ div#notebook {
     <span class="n">S</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">R</span> <span class="o">=</span> <span class="n">soln</span><span class="o">.</span><span class="n">T</span>
     
     <span class="k">return</span> <span class="n">S</span><span class="o">/</span><span class="n">N</span><span class="p">,</span> <span class="n">I</span><span class="o">/</span><span class="n">N</span><span class="p">,</span> <span class="n">R</span><span class="o">/</span><span class="n">N</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 
 <span class="k">def</span> <span class="nf">plot_sir_model</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">gamma</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -13270,43 +13185,9 @@ div#notebook {
     
     <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
-
+    
 <span class="k">def</span> <span class="nf">create_expanded_button</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">button_style</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">button_style</span><span class="o">=</span><span class="n">button_style</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 
 <span class="n">sir_plot</span> <span class="o">=</span> <span class="n">interactive</span><span class="p">(</span><span class="n">plot_sir_model</span><span class="p">,</span> 
                        <span class="n">beta</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> 
@@ -13321,125 +13202,19 @@ div#notebook {
 <span class="n">gamma_slider</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
 <span class="n">gamma_slider</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
 <span class="n">gamma_slider</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">margin</span> <span class="o">=</span> <span class="s1">&#39;0px 0px 20px 0&#39;</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 
 <span class="n">header</span> <span class="o">=</span> <span class="n">HTML</span><span class="p">(</span><span class="s1">&#39;&lt;h1&gt;Coronavirus infection model&lt;/h1&gt;&#39;</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
 
 <span class="n">slider_box</span> <span class="o">=</span> <span class="n">VBox</span><span class="p">([</span><span class="n">HTML</span><span class="p">(</span><span class="s1">&#39;Number of people each infected person comes into contact with on a daily basis:&#39;</span><span class="p">),</span>
                    <span class="n">beta_slider</span><span class="p">,</span>
                    <span class="n">HTML</span><span class="p">(</span><span class="s1">&#39;Percentage of infected people who recover on a daily basis:&#39;</span><span class="p">),</span>
                    <span class="n">gamma_slider</span><span class="p">])</span>
-</pre></div>
 
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="nbinteract-hide_in
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># nbi:hide_in</span>
-
-<span class="n">app_layout</span> <span class="o">=</span> <span class="n">AppLayout</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span>
-          <span class="n">left_sidebar</span><span class="o">=</span><span class="n">slider_box</span><span class="p">,</span>
-          <span class="n">center</span><span class="o">=</span><span class="n">sir_graph</span><span class="p">,</span>
-          <span class="n">right_sidebar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-          <span class="n">footer</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">app_layout</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    
-
-
-
-  <div class="output_subarea output_widget_view ">
-    <button class="js-nbinteract-widget">
-      Loading widgets...
-    </button>
-  </div>
-
-</div>
-
-</div>
-</div>
-
-  </div>
-
-  
-
-  <div class="
-      cell border-box-sizing code_cell rendered">
-    <div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<span class="n">AppLayout</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span>
+                       <span class="n">left_sidebar</span><span class="o">=</span><span class="n">slider_box</span><span class="p">,</span>
+                       <span class="n">center</span><span class="o">=</span><span class="n">sir_graph</span><span class="p">,</span>
+                       <span class="n">right_sidebar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">footer</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 
     </div>
