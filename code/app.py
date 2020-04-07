@@ -2,7 +2,9 @@ import pandas
 
 import dash
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+
+import dash_bootstrap_components as dbc
 
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
@@ -14,7 +16,7 @@ from widgets.models import SeirModelWidget
 # ################## APP ###################
 # ##########################################
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css', dbc.themes.BOOTSTRAP]
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -23,13 +25,28 @@ seir_model = SeirCovidModel(pop_size=10000, num_weeks=52, start_date=pandas.to_d
 seir_model_view = SeirModelWidget(name='SeirModelView', model=seir_model, title='Covid-19 SEIR Model [K-T-L-G]')
 
 # Build the layout
-app.layout = html.Div(children=[
-    html.Div(id='seir-model', children=[
+# app.layout = dbc.Container(
+#     html.Div(children=[
+#         html.Div(id='seir-model', children=[
+#             seir_model_view.header(),
+#             seir_model_view.sliders(),
+#             seir_model_view.graph()
+#         ])
+#     ])
+# )
+
+app.layout = dbc.Container([
         seir_model_view.header(),
-        seir_model_view.sliders(),
-        seir_model_view.graph()
-    ])
-])
+        html.Hr(),
+        dbc.Row(
+            [
+                dbc.Col(seir_model_view.sliders(), md=4),
+                dbc.Col(seir_model_view.graph(), md=8),
+            ],
+            align="center",
+        ),
+    ],
+    fluid=True)
 
 # ##########################################
 # ############### CALLBACKS ################
@@ -43,7 +60,6 @@ param_names = [p.name for p in tunable_params] + ['prevalence']
 @app.callback(
     Output(f'{seir_model_view.name}-graph', 'figure'),
     [Input(f'{seir_model_view.name}-{p.name}-slider', 'value') for p in tunable_params]
-    + [Input(f'{seir_model_view.name}-prevalence-checkbox', 'value')]
 )
 def update_seir_graph(*params):
     params_dict = dict(zip(param_names, params))
@@ -52,21 +68,23 @@ def update_seir_graph(*params):
             setattr(seir_model, k, v)
 
     S, E, I_R, I_H, I_C, R_R, H_H, H_C, R_H, C_C, R_C = seir_model.solve()
-    if not params_dict['prevalence']:
-        S = S / seir_model.pop_size
-        E = E / seir_model.pop_size
-        I_R = I_R / seir_model.pop_size
-        I_H = I_H / seir_model.pop_size
-        I_C = I_C / seir_model.pop_size
-        R_R = R_R / seir_model.pop_size
-        H_H = H_H / seir_model.pop_size
-        H_C = H_C / seir_model.pop_size
-        R_H = R_H / seir_model.pop_size
-        C_C = C_C / seir_model.pop_size
-        R_C = R_C / seir_model.pop_size
-        primary_y_title = 'Percent of population'
-    else:
-        primary_y_title = f'Prevalence per {seir_model.pop_size}'
+    # if not params_dict['prevalence']:
+    #     S = S / seir_model.pop_size
+    #     E = E / seir_model.pop_size
+    #     I_R = I_R / seir_model.pop_size
+    #     I_H = I_H / seir_model.pop_size
+    #     I_C = I_C / seir_model.pop_size
+    #     R_R = R_R / seir_model.pop_size
+    #     H_H = H_H / seir_model.pop_size
+    #     H_C = H_C / seir_model.pop_size
+    #     R_H = R_H / seir_model.pop_size
+    #     C_C = C_C / seir_model.pop_size
+    #     R_C = R_C / seir_model.pop_size
+    #     primary_y_title = 'Percent of population'
+    # else:
+    #     primary_y_title = f'Prevalence per {seir_model.pop_size}'
+
+    primary_y_title = f'Prevalence per {seir_model.pop_size}'
 
     figure = make_subplots(specs=[[{"secondary_y": True}]])
     figure.add_trace(go.Scatter(x=seir_model.t_weeks,
@@ -125,6 +143,28 @@ def update_seir_graph(*params):
     figure.update_layout(plot_bgcolor='white')
 
     return figure
+
+
+@app.callback(
+    Output(f"{seir_model_view.name}-advanced-collapse", "is_open"),
+    [Input(f"{seir_model_view.name}-advanced-collapse-button", "n_clicks")],
+    [State(f"{seir_model_view.name}-advanced-collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+
+@app.callback(
+    Output(f"{seir_model_view.name}-social_distancing-collapse", "is_open"),
+    [Input(f"{seir_model_view.name}-social_distancing-collapse-button", "n_clicks")],
+    [State(f"{seir_model_view.name}-social_distancing-collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 if __name__ == '__main__':

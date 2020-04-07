@@ -1,8 +1,12 @@
 import dash_core_components as dcc
 import dash_html_components as html
 
+import dash_bootstrap_components as dbc
+
 import numpy as np
 from collections import defaultdict
+
+from utils.str import pretty_var
 
 
 class GenericModelWidget:
@@ -40,7 +44,9 @@ class SeirModelWidget(GenericModelWidget):
         marks = {int(i) if i % 1 == 0 else i: '{}'.format(np.round(i, 3)) for i in marks}
         return marks
 
-    def _slider(self, param, steps):
+    def _slider(self, param):
+        # Make an individual pretty slider for the param
+        steps = (param.max_value - param.min_value) / 10
         if param.is_int:
             steps = int(np.floor(steps))
             marks_range = range(param.min_value, param.max_value+steps, steps)
@@ -57,40 +63,43 @@ class SeirModelWidget(GenericModelWidget):
         return slider
 
     def sliders(self):
+        # Collect all the sliders into collapsible cards
+
+        # Group the parameters together (for easier/nicer display)
         param_groups = defaultdict(list)
         for param in self.model.params:
             param_groups[param.group].append(param)
         try:
+            # The constants aren't actually sliders, so ignore them
             del param_groups['constant']
         except KeyError:
             pass
 
-        slider_children = defaultdict(list)
-        groups = ['advanced', 'social_distancing']
+        # Create actual slider groups
+        groups = ['social_distancing', 'advanced']
+
+        # Button(s) to collapse cards of sliders
+        collapse_buttons = {group: dbc.Button(
+            f"View/Hide {pretty_var(group)} params",
+            id=f"{self.name}-{group}-collapse-button",
+            className="mb-3",
+            color="primary",
+        ) for group in groups}
+
+        # Format everything into collapsible cards
+        slider_cards = []
         for group in groups:
+            group_card_body = []
+            group_card_body.append(dbc.CardHeader(f'{pretty_var(group)} parameters'))
             for param in param_groups.get(group):
-                steps = (param.max_value - param.min_value) / 10
-                slider_children[group].append(html.Div(children=[
-                    html.Label(f'{param.desc} ({param.name}):'),
-                    self._slider(param, steps)
-                ]))
+                group_card_body.append(html.Label(f'{param.desc} ({param.name}):'))
+                group_card_body.append(self._slider(param))
+            group_card = dbc.Card(group_card_body, id=f'{self.name}-{group}-card')
+            collapsible_group_card = dbc.Collapse(group_card, id=f'{self.name}-{group}-collapse', is_open=True)
 
-        slider_children['checkboxes'].append(
-            dcc.Checklist(id=f'{self.name}-prevalence-checkbox',
-                          options=[
-                              {'label': 'Prevalence', 'value': 'prevalence'}
-                          ],
-                          value=[]
-                          )
-        )
-        slider_children_groups = [html.Div(id=f'{self.name}-{group}-sliders',
-                                  children=slider_children.get(group))
-                                  for group in groups]
-        slider_children_groups += [html.Div(id=f'{self.name}-checkboxes-sliders',
-                                            children=slider_children.get('checkboxes'))]
-
-        sliders = html.Div(id=f'{self.name}-sliders', children=slider_children_groups)
-        return sliders
+            sliders = html.Div(id=f'{self.name}-{group}-sliders', children=[collapsible_group_card, collapse_buttons[group]])
+            slider_cards.append(sliders)
+        return slider_cards
 
     # def sliders(self):
     #     slider_children = []
