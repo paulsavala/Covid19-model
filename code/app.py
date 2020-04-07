@@ -1,4 +1,5 @@
 import pandas
+import numpy as np
 
 import dash
 import dash_html_components as html
@@ -16,7 +17,7 @@ from widgets.models import SeirModelWidget
 # ################## APP ###################
 # ##########################################
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css', dbc.themes.BOOTSTRAP]
+external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -24,29 +25,18 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 seir_model = SeirCovidModel(pop_size=10000, num_weeks=52, start_date=pandas.to_datetime('3/11/2020').date())
 seir_model_view = SeirModelWidget(name='SeirModelView', model=seir_model, title='Covid-19 SEIR Model [K-T-L-G]')
 
-# Build the layout
-# app.layout = dbc.Container(
-#     html.Div(children=[
-#         html.Div(id='seir-model', children=[
-#             seir_model_view.header(),
-#             seir_model_view.sliders(),
-#             seir_model_view.graph()
-#         ])
-#     ])
-# )
-
-app.layout = dbc.Container([
+# Create the app
+app.layout = dbc.Container(
+    [
         seir_model_view.header(),
         html.Hr(),
-        dbc.Row(
-            [
-                dbc.Col(seir_model_view.sliders(), md=4),
-                dbc.Col(seir_model_view.graph(), md=8),
-            ],
-            align="center",
-        ),
+        dbc.Row([dbc.Col(seir_model_view.graph(), align='center')]),
+        dbc.Row([dbc.Col(seir_model_view.sliders()['social_distancing'])]),
+        dbc.Row([dbc.Col(seir_model_view.sliders()['advanced'])]),
+        seir_model_view.footer()
     ],
-    fluid=True)
+    fluid=True
+)
 
 # ##########################################
 # ############### CALLBACKS ################
@@ -68,47 +58,40 @@ def update_seir_graph(*params):
             setattr(seir_model, k, v)
 
     S, E, I_R, I_H, I_C, R_R, H_H, H_C, R_H, C_C, R_C = seir_model.solve()
-    # if not params_dict['prevalence']:
-    #     S = S / seir_model.pop_size
-    #     E = E / seir_model.pop_size
-    #     I_R = I_R / seir_model.pop_size
-    #     I_H = I_H / seir_model.pop_size
-    #     I_C = I_C / seir_model.pop_size
-    #     R_R = R_R / seir_model.pop_size
-    #     H_H = H_H / seir_model.pop_size
-    #     H_C = H_C / seir_model.pop_size
-    #     R_H = R_H / seir_model.pop_size
-    #     C_C = C_C / seir_model.pop_size
-    #     R_C = R_C / seir_model.pop_size
-    #     primary_y_title = 'Percent of population'
-    # else:
-    #     primary_y_title = f'Prevalence per {seir_model.pop_size}'
+    total_infected = I_R + I_H + I_C
+    total_critical = I_C + H_C + C_C
+
+    max_infected_index = np.where(total_infected == max(total_infected))[0][0]
+    max_infected_value = total_infected[max_infected_index]
+    num_infected = sum(total_infected)
+
+    max_critical_index = np.where(total_critical == max(total_critical))[0][0]
+    max_critical_value = total_critical[max_critical_index]
+    num_critical = sum(total_critical)
 
     primary_y_title = f'Prevalence per {seir_model.pop_size}'
 
     figure = make_subplots(specs=[[{"secondary_y": True}]])
     figure.add_trace(go.Scatter(x=seir_model.t_weeks,
-                                y=I_C + H_C + C_C,
+                                y=total_infected,
+                                mode='lines',
+                                name='Infected',
+                                line={'color': 'blue'},
+                                fill='tozeroy')
+                     )
+    figure.add_trace(go.Scatter(x=seir_model.t_weeks,
+                                y=total_critical,
                                 mode='lines',
                                 name='Critical',
                                 line={'color': 'red',
-                                      'dash': 'dash'}),
-                     secondary_y=True)
-    figure.add_trace(go.Scatter(x=seir_model.t_weeks,
-                                y=I_R + I_H + I_C,
-                                mode='lines',
-                                name='Infected',
-                                line={'color': 'red'})
-                     ),
-    # figure.add_trace(go.Scatter(x=seir_model.t_weeks,
-    #                             y=E,
-    #                             mode='lines',
-    #                             name='Exposed',
-    #                             line={'color': 'blue'})
-    #                  )
+                                      'dash': 'dash'},
+                                fill='tozeroy'),
+                     secondary_y=True
+                     )
 
     figure.update_layout(
         shapes=[
+            # Shade the fixed social distancing
             dict(
                 type="rect",
                 # x-reference is assigned to the x-values
@@ -124,17 +107,43 @@ def update_seir_graph(*params):
                 layer="below",
                 line_width=0,
             )
+        ],
+        annotations=[
+            # Annotate the infected cases
+            dict(
+                xref="x",
+                yref="y",
+                x=seir_model.t_weeks[max_infected_index + 6],
+                y=0.9*max_infected_value,
+                text=f'{int(np.round(num_infected, 0))} infected in total',
+                showarrow=False,
+                bgcolor='rgba(255,255,255,1)',
+                bordercolor='blue'
+            ),
+            # Annotate the critical cases
+            dict(
+                xref="x",
+                yref="y2",
+                x=seir_model.t_weeks[max_critical_index + 6],
+                y=0.9 * max_critical_value,
+                text=f'{int(np.round(num_critical, 0))} critical in total',
+                showarrow=False,
+                bgcolor='rgba(255,255,255,1)',
+                bordercolor='red'
+            )
         ]
     )
 
     figure.update_yaxes(title_text=primary_y_title,
                         secondary_y=False,
                         showgrid=False,
-                        zerolinecolor='black')
+                        zerolinecolor='black',
+                        range=[0, max([1.1*(max(I_R + I_H + I_C)), 1000])])
     figure.update_yaxes(title_text=f"{primary_y_title} (critical)",
                         secondary_y=True,
                         showgrid=False,
-                        zerolinecolor='black')
+                        zerolinecolor='black',
+                        range=[0, max([1.1*(max(I_C + H_C + C_C)), 100])])
     figure.update_xaxes(title_text='Weeks',
                         showgrid=True,
                         gridcolor='gray',
@@ -149,17 +158,6 @@ def update_seir_graph(*params):
     Output(f"{seir_model_view.name}-advanced-collapse", "is_open"),
     [Input(f"{seir_model_view.name}-advanced-collapse-button", "n_clicks")],
     [State(f"{seir_model_view.name}-advanced-collapse", "is_open")],
-)
-def toggle_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
-
-
-@app.callback(
-    Output(f"{seir_model_view.name}-social_distancing-collapse", "is_open"),
-    [Input(f"{seir_model_view.name}-social_distancing-collapse-button", "n_clicks")],
-    [State(f"{seir_model_view.name}-social_distancing-collapse", "is_open")],
 )
 def toggle_collapse(n, is_open):
     if n:

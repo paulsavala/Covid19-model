@@ -1,12 +1,16 @@
 
 
 class GenericParam:
-    def __init__(self, name, min_value, desc, max_value=None, default_value=None, is_int=False, group=None):
+    def __init__(self, name, min_value, desc, max_value=None, default_value=None, is_int=False, is_pct=False,
+                 group=None, show_label=False):
         self.name = name
         self.min_value = min_value
         self.desc = desc
         self.is_int = is_int
+        self.is_pct = is_pct
         self.group = group
+        self.show_label = show_label
+
         if group is None and max_value == min_value:
             self.group = 'constant'
 

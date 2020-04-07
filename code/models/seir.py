@@ -7,10 +7,12 @@ from models.params import GenericParam
 
 
 class SeirCovidModel:
-    def __init__(self, pop_size, num_weeks, start_date=None):
+    def __init__(self, pop_size, num_weeks, start_date=None, static_sd=True, dynamic_sd=False):
         self.pop_size = pop_size
         self.num_weeks = num_weeks
         self.start_date = start_date
+        self.static_sd = static_sd
+        self.dynamic_sd = dynamic_sd
 
         p_R_desc = 'Proportion of exposed individuals who enter the infected recovery state I_R'
         p_H_desc = 'Proportion of exposed individuals who enter the hospitalization state I_H ' \
@@ -29,7 +31,7 @@ class SeirCovidModel:
         phi_desc = 'Phase shift of the seasonal forcing'
         start_sd_desc = 'Start of social distancing after onset of initial infection (weeks after initial case)'
         sd_duration_desc = 'Duration of social distancing (weeks)'
-        sd_reduction_desc = 'Percentage to reduce R0 by'
+        sd_reduction_desc = 'Percentage to reduce weekly contact (R0) by'
 
         self.p_R_param = GenericParam(name='p_R', min_value=0.956, desc=p_R_desc)
         self.p_H_param = GenericParam(name='p_H', min_value=0.0308, desc=p_H_desc)
@@ -39,20 +41,25 @@ class SeirCovidModel:
         self.delta_H_param = GenericParam(name='delta_H', min_value=7/8, desc=delta_H_desc)
         self.delta_C_param = GenericParam(name='delta_C', min_value=7/6, desc=delta_C_desc)
         self.xi_C_param = GenericParam(name='xi_C', min_value=7/10, desc=xi_C_desc)
-        self.max_R0_param = GenericParam(name='max_R0', min_value=2, max_value=2.5, desc=max_R0_desc, group='advanced')
-        self.delta_param = GenericParam(name='delta', min_value=0, max_value=0.3, desc=delta_desc, group='advanced')
+        self.max_R0_param = GenericParam(name='max_R0', min_value=2, max_value=2.5, desc=max_R0_desc, group='advanced',
+                                         show_label=True)
+        self.delta_param = GenericParam(name='delta', min_value=0, max_value=0.3, desc=delta_desc, group='advanced',
+                                        show_label=True, is_pct=True)
         self.phi_param = GenericParam(name='phi', min_value=-3.8, desc=phi_desc)
-        self.start_sd_param = GenericParam(name='start_sd', min_value=0, max_value=self.num_weeks, default_value=2,
+        self.start_sd_param = GenericParam(name='start_sd', min_value=0, max_value=20, default_value=2,
                                            is_int=True, desc=start_sd_desc, group='social_distancing')
         self.sd_duration_param = GenericParam(name='sd_duration', min_value=0, max_value=40, default_value=4,
                                               is_int=True, desc=sd_duration_desc, group='social_distancing')
         self.sd_reduction_param = GenericParam(name='sd_reduction', min_value=0, max_value=1, default_value=0.4,
-                                               desc=sd_reduction_desc, group='social_distancing')
+                                               desc=sd_reduction_desc, group='social_distancing', is_pct=True)
+        self.dynamic_sd_reduction_cutoff_param = GenericParam(name='dynamic_sd_cutoff', min_value=20, max_value=100,
+                                                              is_int=True, default_value=38)
 
         self.params = [self.p_R_param, self.p_H_param, self.p_C_param, self.nu_param, self.gamma_param,
                        self.delta_H_param, self.delta_C_param, self.xi_C_param, self.max_R0_param,
                        self.delta_param, self.phi_param,
-                       self.start_sd_param, self.sd_duration_param, self.sd_reduction_param]
+                       self.start_sd_param, self.sd_duration_param, self.sd_reduction_param,
+                       self.dynamic_sd_reduction_cutoff_param]
 
         self.p_R = self.p_R_param.default_value
         self.p_H = self.p_H_param.default_value
@@ -68,6 +75,7 @@ class SeirCovidModel:
         self.start_sd = int(self.start_sd_param.default_value)
         self.sd_duration = int(self.sd_duration_param.default_value)
         self.sd_reduction = self.sd_reduction_param.default_value
+        self.dynamic_sd_reduction_cutoff = self.dynamic_sd_reduction_cutoff_param.default_value
 
         self.t = range(0, self.num_weeks + 1)
         self.t_weeks = [self.start_date + timedelta(weeks=t_i) for t_i in self.t]
