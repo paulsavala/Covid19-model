@@ -34,6 +34,43 @@ class GenericModelWidget:
 
 
 class SeirModelWidget(GenericModelWidget):
+    def _slider(self, param, steps):
+        if param.is_int:
+            steps = int(np.floor(steps))
+            marks_range = range(param.min_value, param.max_value+1, steps)
+        else:
+            marks_range = np.arange(param.min_value, param.max_value+1, steps)
+            
+        slider = dcc.Slider(id=f'{self.name}-{param.name}-slider',
+                            min=param.min_value,
+                            max=param.max_value,
+                            step=steps,
+                            value=param.default_value,
+                            marks={s: str(s) for s in marks_range}
+                            )
+        return slider
+
+    def _sliders(self):
+        param_groups = defaultdict(list)
+        for param in self.model.params:
+            param_groups[param.group].append(param)
+        try:
+            del param_groups['constant']
+        except KeyError:
+            pass
+
+        slider_children = defaultdict(list)
+        # Advanced sliders
+        group = 'advanced'
+        for param in param_groups.get(group):
+            steps = (param.max_value - param.min_value) / 10
+            slider_children[group].append(
+                html.Label(f'{param.desc} ({param.name}):')
+            )
+            slider = self._slider(param, steps)
+
+
+
     def sliders(self):
         slider_children = []
         for param in self.model.params:
