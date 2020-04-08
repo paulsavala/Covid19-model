@@ -20,6 +20,7 @@ from widgets.models import SeirModelWidget
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 # Initialize the SEIR model
 seir_model = SeirCovidModel(pop_size=10000, num_weeks=52+26, start_date=pandas.to_datetime('3/11/2020').date())
@@ -127,11 +128,17 @@ def update_seir_graph(*params):
     figure.update_layout(shapes=shapes, annotations=annotations)
 
     figure.update_yaxes(title_text=primary_y_title,
+                        tickfont=dict(
+                            color="blue"
+                        ),
                         secondary_y=False,
                         showgrid=False,
                         zerolinecolor='black',
                         range=[0, max([1.1*(max(I_R + I_H + I_C)), 1000])])
     figure.update_yaxes(title_text=f"{primary_y_title} (critical)",
+                        tickfont=dict(
+                            color="red"
+                        ),
                         secondary_y=True,
                         showgrid=False,
                         zerolinecolor='black',

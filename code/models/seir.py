@@ -47,11 +47,11 @@ class SeirCovidModel:
         self.delta_param = GenericParam(name='delta', min_value=0, max_value=0.3, desc=delta_desc, group='advanced',
                                         show_label=True, is_pct=True)
         self.phi_param = GenericParam(name='phi', min_value=-3.8, desc=phi_desc)
-        self.start_sd_param = GenericParam(name='start_sd', min_value=0, max_value=20, default_value=2,
+        self.start_sd_param = GenericParam(name='start_sd', min_value=0, max_value=20, default_value=6,
                                            is_int=True, desc=start_sd_desc, group='static_social_distancing')
-        self.sd_duration_param = GenericParam(name='sd_duration', min_value=0, max_value=40, default_value=4,
+        self.sd_duration_param = GenericParam(name='sd_duration', min_value=0, max_value=40, default_value=8,
                                               is_int=True, desc=sd_duration_desc, group='static_social_distancing')
-        self.sd_reduction_param = GenericParam(name='sd_reduction', min_value=0, max_value=1, default_value=0.4,
+        self.sd_reduction_param = GenericParam(name='sd_reduction', min_value=0, max_value=1, default_value=0.5,
                                                desc=sd_reduction_desc, group='static_social_distancing', is_pct=True)
         self.dynamic_sd_cutoff_param = GenericParam(name='dynamic_sd_cutoff', min_value=20, max_value=100,
                                                     is_int=True, default_value=38, desc=dynamic_sd_cutoff_desc,

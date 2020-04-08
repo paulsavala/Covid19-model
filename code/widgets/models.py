@@ -67,7 +67,7 @@ class SeirModelWidget(GenericModelWidget):
         slider for one (or both) social distancing methods. The parameters to adjust that method will then show up
         below the graph. Try adjusting them to see how infections change based on your method. 
         ''')
-        return html.Div(id='main_text', children=main_text, className='mt-5')
+        return html.Div(id='main_text', children=main_text, className='mt-2')
 
     def sd_switches(self):
         sd_switches = dbc.FormGroup(
