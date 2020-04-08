@@ -61,17 +61,14 @@ def update_seir_graph(*params):
     total_infected = I_R + I_H + I_C
     total_critical = I_C + H_C + C_C
 
-    max_infected_index = np.where(total_infected == max(total_infected))[0][0]
-    max_infected_value = total_infected[max_infected_index]
-    num_infected = sum(total_infected)
-
     max_critical_index = np.where(total_critical == max(total_critical))[0][0]
     max_critical_value = total_critical[max_critical_index]
-    num_critical = sum(total_critical)
+    critical_above_capacity = np.sum(total_critical > 0.89)
 
     primary_y_title = f'Prevalence per {seir_model.pop_size}'
 
     figure = make_subplots(specs=[[{"secondary_y": True}]])
+    # All cases
     figure.add_trace(go.Scatter(x=seir_model.t_weeks,
                                 y=total_infected,
                                 mode='lines',
@@ -79,6 +76,7 @@ def update_seir_graph(*params):
                                 line={'color': 'blue'},
                                 fill='tozeroy')
                      )
+    # Critical cases
     figure.add_trace(go.Scatter(x=seir_model.t_weeks,
                                 y=total_critical,
                                 mode='lines',
@@ -94,43 +92,56 @@ def update_seir_graph(*params):
             # Shade the fixed social distancing
             dict(
                 type="rect",
-                # x-reference is assigned to the x-values
                 xref="x",
-                # y-reference is assigned to the plot paper [0,1]
                 yref="paper",
                 x0=seir_model.t_weeks[seir_model.start_sd],
                 y0=0,
                 x1=seir_model.t_weeks[seir_model.start_sd + seir_model.sd_duration],
                 y1=1,
-                fillcolor=f"rgba(0,0,255,{seir_model.sd_reduction})",
+                fillcolor=f"rgba(0,255,0,{seir_model.sd_reduction})",
                 opacity=0.3,
                 layer="below",
-                line_width=0,
+                line_width=0
+            ),
+            # Critical care capacity
+            dict(
+                type='line',
+                xref='paper',
+                yref='y2',
+                x0=0,
+                y0=0.89,
+                x1=1,
+                y1=0.89,
+                line=dict(
+                    color='black',
+                    width=3,
+                    dash='dot'
+                )
             )
         ],
         annotations=[
-            # Annotate the infected cases
-            dict(
-                xref="x",
-                yref="y",
-                x=seir_model.t_weeks[max_infected_index + 6],
-                y=0.9*max_infected_value,
-                text=f'{int(np.round(num_infected, 0))} infected in total',
-                showarrow=False,
-                bgcolor='rgba(255,255,255,1)',
-                bordercolor='blue'
-            ),
             # Annotate the critical cases
             dict(
                 xref="x",
                 yref="y2",
                 x=seir_model.t_weeks[max_critical_index + 6],
                 y=0.9 * max_critical_value,
-                text=f'{int(np.round(num_critical, 0))} critical in total',
+                text=f'{critical_above_capacity} days above critical care open bed capacity',
                 showarrow=False,
                 bgcolor='rgba(255,255,255,1)',
                 bordercolor='red'
-            )
+            ),
+            # Annotate the social distancing period
+            dict(
+                xref="x",
+                yref="paper",
+                x=seir_model.t_weeks[int((seir_model.start_sd + seir_model.sd_duration)/2)],
+                y=1.1,
+                text=f'Social distancing period',
+                showarrow=False,
+                bgcolor='rgba(255,255,255,1)',
+                bordercolor='green'
+            ),
         ]
     )
 

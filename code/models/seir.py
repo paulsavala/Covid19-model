@@ -32,6 +32,7 @@ class SeirCovidModel:
         start_sd_desc = 'Start of social distancing after onset of initial infection (weeks after initial case)'
         sd_duration_desc = 'Duration of social distancing (weeks)'
         sd_reduction_desc = 'Percentage to reduce weekly contact (R0) by'
+        dynamic_sd_cutoff_desc = 'Number of cases per 10,000 required to trigger social distancing'
 
         self.p_R_param = GenericParam(name='p_R', min_value=0.956, desc=p_R_desc)
         self.p_H_param = GenericParam(name='p_H', min_value=0.0308, desc=p_H_desc)
@@ -52,14 +53,15 @@ class SeirCovidModel:
                                               is_int=True, desc=sd_duration_desc, group='social_distancing')
         self.sd_reduction_param = GenericParam(name='sd_reduction', min_value=0, max_value=1, default_value=0.4,
                                                desc=sd_reduction_desc, group='social_distancing', is_pct=True)
-        self.dynamic_sd_reduction_cutoff_param = GenericParam(name='dynamic_sd_cutoff', min_value=20, max_value=100,
-                                                              is_int=True, default_value=38)
+        self.dynamic_sd_cutoff_param = GenericParam(name='dynamic_sd_cutoff', min_value=20, max_value=100,
+                                                    is_int=True, default_value=38, desc=dynamic_sd_cutoff_desc,
+                                                    group='social_distancing')
 
         self.params = [self.p_R_param, self.p_H_param, self.p_C_param, self.nu_param, self.gamma_param,
                        self.delta_H_param, self.delta_C_param, self.xi_C_param, self.max_R0_param,
                        self.delta_param, self.phi_param,
                        self.start_sd_param, self.sd_duration_param, self.sd_reduction_param,
-                       self.dynamic_sd_reduction_cutoff_param]
+                       self.dynamic_sd_cutoff_param]
 
         self.p_R = self.p_R_param.default_value
         self.p_H = self.p_H_param.default_value
@@ -75,14 +77,15 @@ class SeirCovidModel:
         self.start_sd = int(self.start_sd_param.default_value)
         self.sd_duration = int(self.sd_duration_param.default_value)
         self.sd_reduction = self.sd_reduction_param.default_value
-        self.dynamic_sd_reduction_cutoff = self.dynamic_sd_reduction_cutoff_param.default_value
+        self.dynamic_sd_cutoff = self.dynamic_sd_cutoff_param.default_value
 
         self.t = range(0, self.num_weeks + 1)
         self.t_weeks = [self.start_date + timedelta(weeks=t_i) for t_i in self.t]
 
-    def _adjust_R0(self, R0, t):
-        if self.start_sd < t < self.start_sd + self.sd_duration:
-            R0 = (1 - self.sd_reduction) * R0
+    def _adjust_R0_static(self, R0, t):
+        if self.static_sd:
+            if self.start_sd < t < self.start_sd + self.sd_duration:
+                R0 = (1 - self.sd_reduction) * R0
         return R0
 
     def _R0(self, t):
@@ -90,7 +93,7 @@ class SeirCovidModel:
         vert_shift = (self.max_R0 + (1 - self.delta) * self.max_R0) / 2
         period = 52
         R0 = amp * np.cos((2 * np.pi / period) * (t + self.phi)) + vert_shift
-        R0 = self._adjust_R0(R0, t)
+        R0 = self._adjust_R0_static(R0, t)
         return R0
 
     def _beta(self, t):

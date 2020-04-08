@@ -85,7 +85,7 @@ class SeirModelWidget(GenericModelWidget):
                                               className='mt-3')
 
         collapse_button = dbc.Button(
-            f"Toggle {pretty_var(group_name)} params",
+            f"Toggle {pretty_var(group_name, upper_only_first=True)} parameters",
             id=f"{self.name}-{group_name}-collapse-button",
             className="mt-3",
             color="primary",
