@@ -50,7 +50,7 @@ class SeirModelWidget(GenericModelWidget):
                         {"label": "Static (fixed time period)", "value": 'static'},
                         {"label": "Dynamic (based on number of cases)", "value": 'dynamic'},
                     ],
-                    value=[],
+                    value=['static'],
                     id=f"{self.name}-social_distancing-switches-input",
                     switch=True,
                 )
@@ -133,15 +133,57 @@ class SeirModelWidget(GenericModelWidget):
             pass
 
         # Create actual slider groups
-        group_names = ['static_social_distancing', 'advanced']
+        group_names = ['static_social_distancing', 'dynamic_social_distancing', 'advanced']
         slider_card_groups = {group_name: None for group_name in group_names}
 
-        slider_card_groups['static_social_distancing'] = self._card('static_social_distancing', param_groups, is_open=True)
+        slider_card_groups['static_social_distancing'] = self._card('static_social_distancing', param_groups)
+        slider_card_groups['dynamic_social_distancing'] = self._card('dynamic_social_distancing', param_groups)
         slider_card_groups['advanced'] = self._card('advanced', param_groups, is_open=False)
         return slider_card_groups
 
     def main_text(self):
-        main_text = dcc.Markdown(f'''
-        Social distancing has a strong effect on the 
-        ''')
-        return html.Div(id='main_text', children=main_text, className='mt-5 h5')
+        main_text = dcc.Markdown(f'''Text explaining how this works''')
+        return html.Div(id='main_text', children=main_text, className='mt-5')
+
+    def static_sd_overlay_shape(self, model):
+        shapes = [
+            # Shade the fixed social distancing
+            dict(
+                type="rect",
+                xref="x",
+                yref="paper",
+                x0=model.t_weeks[model.start_sd],
+                y0=0,
+                x1=model.t_weeks[model.start_sd + model.sd_duration],
+                y1=1,
+                fillcolor=f"rgba(0,0,0,{model.sd_reduction})",
+                opacity=0.3,
+                layer="below",
+                line_width=0
+            )
+        ]
+        return shapes
+
+    def static_sd_overlay_annotation(self, model):
+        annotation = [
+            # Annotate the social distancing period
+            dict(
+                xref="x",
+                yref="paper",
+                x=model.t_weeks[int((model.start_sd + model.sd_duration) / 2)],
+                y=1.1,
+                text=f'Social distancing',
+                showarrow=False,
+                bgcolor='white',
+                bordercolor='gray'
+            )
+        ]
+        return annotation
+
+    def dynamic_sd_overlay_shape(self, model):
+        shapes = None
+        return shapes
+
+    def dynamic_sd_overlay_annotation(self, model):
+        annotation = None
+        return annotation
