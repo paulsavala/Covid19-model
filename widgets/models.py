@@ -21,7 +21,7 @@ class GenericModelWidget:
             figure={
                 'data': None,
                 'layout': {
-                    'title': self.title
+                    'title': None
                 }
             }
         )
@@ -64,7 +64,7 @@ class SeirModelWidget(GenericModelWidget):
         #### How to use this app
         The graph below shows the expected number of infected people (blue), along with the expected number of critical 
         cases (red) per every 10,000 people. In order to implement different social distancing strategies, click the
-        slider for one (or both) social distancing methods. The parameters to adjust that method will then show up
+        buttons for one (or both) social distancing methods. The parameters to adjust that method will then show up
         below the graph. Try adjusting them to see how infections change based on your method. 
         ''')
         return html.Div(id='main_text', children=main_text, className='mt-2')

@@ -24,7 +24,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
 # Initialize the SEIR model
-seir_model = SeirCovidModel(pop_size=10000, num_weeks=52+26, start_date=pandas.to_datetime('3/11/2020').date())
+seir_model = SeirCovidModel(pop_size=10000, num_weeks=2*52, start_date=pandas.to_datetime('3/11/2020').date())
 seir_model_view = SeirModelWidget(name='SeirModelView', model=seir_model, title='Covid-19 SEIR Model [K-T-L-G]')
 
 # Create the app
@@ -42,6 +42,8 @@ app.layout = dbc.Container(
     ],
     fluid=True
 )
+
+app.title = 'Social distancing and COVID-19'
 
 # ##########################################
 # ############### CALLBACKS ################
