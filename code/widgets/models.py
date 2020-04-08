@@ -34,12 +34,40 @@ class GenericModelWidget:
         return None
 
     def footer(self):
-        return None
+        return html.Div(className='page-footer mb-5')
 
 
 class SeirModelWidget(GenericModelWidget):
     def header(self):
-        return html.H1(children='Title')
+        return html.H1(children='The effects of social distancing on the spread of COVID-19')
+
+    def main_text(self):
+        main_text = dcc.Markdown(f'''
+        Social distancing has an important effect on the spread of the coronavirus. Two possible social distancing
+        strategies are illustrated here: static and dynamic.
+        
+        #### Static social distancing
+        Static social distancing refers to implementing social distancing over a fixed period of time. For example, 
+        social distancing could begin 4 weeks after the first case is reported, and last for 12 weeks.
+        
+        #### Dynamic social distancing
+        Dynamic social distancing refers to "turning on and off" social distancing based on the number of cases 
+        reported.
+        
+        #### The model
+        The model shown here is based on the paper 
+        ["Social distancing strategies for curbing the COVID-19 epidemic"]
+        (https://www.medrxiv.org/content/10.1101/2020.03.22.20041079v1.article-info)
+        by the researchers Kissler, Tedijanto, Lipsitch and Grad at Harvard. I am in no way associated with these
+        researchers. For me about me, see my [LinkedIn profile](https://www.linkedin.com/in/paul-savala-ph-d-61153193/).
+        
+        #### How to use this app
+        The graph below shows the expected number of infected people (blue), along with the expected number of critical 
+        cases (red) per every 10,000 people. In order to implement different social distancing strategies, click the
+        slider for one (or both) social distancing methods. The parameters to adjust that method will then show up
+        below the graph. Try adjusting them to see how infections change based on your method. 
+        ''')
+        return html.Div(id='main_text', children=main_text, className='mt-5')
 
     def sd_switches(self):
         sd_switches = dbc.FormGroup(
@@ -141,10 +169,6 @@ class SeirModelWidget(GenericModelWidget):
         slider_card_groups['advanced'] = self._card('advanced', param_groups, is_open=False)
         return slider_card_groups
 
-    def main_text(self):
-        main_text = dcc.Markdown(f'''Text explaining how this works''')
-        return html.Div(id='main_text', children=main_text, className='mt-5')
-
     def static_sd_overlay_shape(self, model):
         shapes = [
             # Shade the fixed social distancing
@@ -173,6 +197,7 @@ class SeirModelWidget(GenericModelWidget):
                 x=model.t_weeks[int((model.start_sd + model.sd_duration) / 2)],
                 y=1.1,
                 text=f'Social distancing',
+                align='center',
                 showarrow=False,
                 bgcolor='white',
                 bordercolor='gray'
@@ -180,10 +205,3 @@ class SeirModelWidget(GenericModelWidget):
         ]
         return annotation
 
-    def dynamic_sd_overlay_shape(self, model):
-        shapes = None
-        return shapes
-
-    def dynamic_sd_overlay_annotation(self, model):
-        annotation = None
-        return annotation

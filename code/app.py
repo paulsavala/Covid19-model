@@ -35,7 +35,8 @@ app.layout = dbc.Container(
         seir_model_view.sd_switches(),
         dbc.Row([dbc.Col(seir_model_view.sliders()['static_social_distancing'])]),
         dbc.Row([dbc.Col(seir_model_view.sliders()['dynamic_social_distancing'])]),
-        dbc.Row([dbc.Col(seir_model_view.sliders()['advanced'])])
+        dbc.Row([dbc.Col(seir_model_view.sliders()['advanced'])]),
+        seir_model_view.footer()
     ],
     fluid=True
 )
@@ -138,7 +139,8 @@ def update_seir_graph(*params):
     figure.update_xaxes(title_text='Weeks',
                         showgrid=True,
                         gridcolor='gray',
-                        zerolinecolor='black')
+                        zerolinecolor='black',
+                        range=[seir_model.t_weeks[0], seir_model.t_weeks[-1]])
 
     figure.update_layout(plot_bgcolor='white')
 
