@@ -48,14 +48,14 @@ class SeirCovidModel:
                                         show_label=True, is_pct=True)
         self.phi_param = GenericParam(name='phi', min_value=-3.8, desc=phi_desc)
         self.start_sd_param = GenericParam(name='start_sd', min_value=0, max_value=20, default_value=2,
-                                           is_int=True, desc=start_sd_desc, group='social_distancing')
+                                           is_int=True, desc=start_sd_desc, group='static_social_distancing')
         self.sd_duration_param = GenericParam(name='sd_duration', min_value=0, max_value=40, default_value=4,
-                                              is_int=True, desc=sd_duration_desc, group='social_distancing')
+                                              is_int=True, desc=sd_duration_desc, group='static_social_distancing')
         self.sd_reduction_param = GenericParam(name='sd_reduction', min_value=0, max_value=1, default_value=0.4,
-                                               desc=sd_reduction_desc, group='social_distancing', is_pct=True)
+                                               desc=sd_reduction_desc, group='static_social_distancing', is_pct=True)
         self.dynamic_sd_cutoff_param = GenericParam(name='dynamic_sd_cutoff', min_value=20, max_value=100,
                                                     is_int=True, default_value=38, desc=dynamic_sd_cutoff_desc,
-                                                    group='social_distancing')
+                                                    group='advanced')
 
         self.params = [self.p_R_param, self.p_H_param, self.p_C_param, self.nu_param, self.gamma_param,
                        self.delta_H_param, self.delta_C_param, self.xi_C_param, self.max_R0_param,

@@ -30,10 +30,11 @@ app.layout = dbc.Container(
     [
         seir_model_view.header(),
         html.Hr(),
+        html.Div(seir_model_view.main_text()),
         dbc.Row([dbc.Col(seir_model_view.graph(), align='center')]),
-        dbc.Row([dbc.Col(seir_model_view.sliders()['social_distancing'])]),
-        dbc.Row([dbc.Col(seir_model_view.sliders()['advanced'])]),
-        seir_model_view.footer()
+        seir_model_view.sd_switches(),
+        dbc.Row([dbc.Col(seir_model_view.sliders()['static_social_distancing'])]),
+        dbc.Row([dbc.Col(seir_model_view.sliders()['advanced'])])
     ],
     fluid=True
 )
@@ -44,7 +45,7 @@ app.layout = dbc.Container(
 
 # SEIR
 tunable_params = [p for p in seir_model.params if not p.is_constant]
-param_names = [p.name for p in tunable_params] + ['prevalence']
+param_names = [p.name for p in tunable_params]
 
 
 @app.callback(
@@ -64,6 +65,7 @@ def update_seir_graph(*params):
     max_critical_index = np.where(total_critical == max(total_critical))[0][0]
     max_critical_value = total_critical[max_critical_index]
     critical_above_capacity = np.sum(total_critical > 0.89)
+    avg_needed_beds = np.round(np.average(total_critical[np.where(total_critical > 0.89)]), 1)
 
     primary_y_title = f'Prevalence per {seir_model.pop_size}'
 
@@ -131,13 +133,25 @@ def update_seir_graph(*params):
                 bgcolor='rgba(255,255,255,1)',
                 bordercolor='red'
             ),
+            # Annotate the avg number of beds needed
+            dict(
+                xref="x",
+                yref="y2",
+                x=seir_model.t_weeks[max_critical_index + 6],
+                y=0.7 * max_critical_value,
+                text=f'Average shortage of {avg_needed_beds} beds per 10,000 people',
+                showarrow=False,
+                bgcolor='rgba(255,255,255,1)',
+                bordercolor='red'
+            ),
             # Annotate the social distancing period
             dict(
                 xref="x",
                 yref="paper",
                 x=seir_model.t_weeks[int((seir_model.start_sd + seir_model.sd_duration)/2)],
                 y=1.1,
-                text=f'Social distancing period',
+                text=f'Social distancing from {seir_model.t_weeks[seir_model.static_sd]} to '
+                     f'{seir_model.t_weeks[seir_model.static_sd + seir_model.sd_duration]}',
                 showarrow=False,
                 bgcolor='rgba(255,255,255,1)',
                 bordercolor='green'
@@ -154,7 +168,7 @@ def update_seir_graph(*params):
                         secondary_y=True,
                         showgrid=False,
                         zerolinecolor='black',
-                        range=[0, max([1.1*(max(I_C + H_C + C_C)), 100])])
+                        range=[0, max([1.1*(max(I_C + H_C + C_C)), 60])])
     figure.update_xaxes(title_text='Weeks',
                         showgrid=True,
                         gridcolor='gray',
@@ -170,10 +184,20 @@ def update_seir_graph(*params):
     [Input(f"{seir_model_view.name}-advanced-collapse-button", "n_clicks")],
     [State(f"{seir_model_view.name}-advanced-collapse", "is_open")],
 )
-def toggle_collapse(n, is_open):
+def toggle_advanced_collapse(n, is_open):
     if n:
         return not is_open
     return is_open
+
+
+@app.callback(
+    Output(f'{seir_model_view.name}-static_social_distancing-collapse', 'is_open'),
+    [Input(f'{seir_model_view.name}-social_distancing-switches-input', 'value')]
+)
+def toggle_sd_method(value):
+    if value == ['static']:
+        seir_model.static_sd = True
+        return True
 
 
 if __name__ == '__main__':
