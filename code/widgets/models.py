@@ -39,7 +39,7 @@ class GenericModelWidget:
 
 class SeirModelWidget(GenericModelWidget):
     def header(self):
-        return html.H1(children='Covid-19 SEIR Model [K-T-L-G]')
+        return html.H1(children='Title')
 
     def sd_switches(self):
         sd_switches = dbc.FormGroup(

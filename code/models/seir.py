@@ -115,8 +115,13 @@ class SeirCovidModel:
 
         beta_t = self._beta(t)
 
-        if self.dynamic_sd and infected and infected > self.dynamic_sd_cutoff and (t < self.start_sd or t > self.start_sd + self.sd_duration):
+        if self.static_sd and self.start_sd < t < self.start_sd + self.sd_duration:
             beta_t = self._adjust_R0(beta_t)
+        if self.dynamic_sd and infected:
+            # If social distancing should be triggered...
+            if infected > self.dynamic_sd_cutoff and (t < self.start_sd or t > self.start_sd + self.sd_duration):
+                # Update R0
+                beta_t = self._adjust_R0(beta_t)
 
         dSdt = -beta_t * (I_R + I_H + I_C) * S / self.pop_size
         dEdt = -dSdt - nu*E
@@ -144,10 +149,6 @@ class SeirCovidModel:
         R_C0 = 0
         S0 = self.pop_size - (E0 + I_R0 + I_H0 + I_C0 + R_R0 + H_H0 + H_C0 + R_H0 + C_C0 + R_C0)
         y0 = (S0, E0, I_R0, I_H0, I_C0, R_R0, H_H0, H_C0, R_H0, C_C0, R_C0)
-
-        # soln = odeint(self._diff_eqn, y0, self.t,
-        #               args=(self.p_R, self.p_H, self.p_C, self.nu, self.gamma, self.delta_H, self.delta_C, self.xi_C))
-        # S, E, I_R, I_H, I_C, R_R, H_H, H_C, R_H, C_C, R_C = soln.T
 
         sol = solve_ivp(self._diff_eqn, (self.t[0], self.t[-1]), y0,
                         args=(self.p_R, self.p_H, self.p_C, self.nu, self.gamma, self.delta_H, self.delta_C, self.xi_C))
