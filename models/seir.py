@@ -117,9 +117,9 @@ class SeirCovidModel:
 
         if self.static_sd and self.start_sd < t < self.start_sd + self.sd_duration:
             beta_t = self._adjust_R0(beta_t)
-        if self.dynamic_sd and infected:
+        if self.dynamic_sd:
             # If social distancing should be triggered...
-            if infected > self.dynamic_sd_cutoff and (t < self.start_sd or t > self.start_sd + self.sd_duration):
+            if infected > self.dynamic_sd_cutoff and (self.static_sd and (t < self.start_sd or t > self.start_sd + self.sd_duration)):
                 # Update R0
                 beta_t = self._adjust_R0(beta_t)
 
