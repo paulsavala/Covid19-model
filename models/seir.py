@@ -32,16 +32,17 @@ class SeirCovidModel:
         start_sd_desc = 'Start of social distancing (weeks after initial case)'
         sd_duration_desc = 'Duration of social distancing (weeks)'
         sd_reduction_desc = 'Percentage to reduce weekly contact by'
-        dynamic_sd_cutoff_desc = 'Number of cases per 10,000 required to trigger social distancing'
+        dynamic_sd_on_desc = 'Number of cases per 10,000 required to start social distancing'
+        dynamic_sd_off_desc = 'Number of cases per 10,000 required to stop social distancing'
 
         self.p_R_param = GenericParam(name='p_R', min_value=0.956, desc=p_R_desc)
         self.p_H_param = GenericParam(name='p_H', min_value=0.0308, desc=p_H_desc)
         self.p_C_param = GenericParam(name='p_C', min_value=0.0132, desc=p_C_desc)
-        self.nu_param = GenericParam(name='nu', min_value=7/4.6, desc=nu_desc)
-        self.gamma_param = GenericParam(name='gamma', min_value=7/5, desc=gamma_desc)
-        self.delta_H_param = GenericParam(name='delta_H', min_value=7/8, desc=delta_H_desc)
-        self.delta_C_param = GenericParam(name='delta_C', min_value=7/6, desc=delta_C_desc)
-        self.xi_C_param = GenericParam(name='xi_C', min_value=7/10, desc=xi_C_desc)
+        self.nu_param = GenericParam(name='nu', min_value=7 / 4.6, desc=nu_desc)
+        self.gamma_param = GenericParam(name='gamma', min_value=7 / 5, desc=gamma_desc)
+        self.delta_H_param = GenericParam(name='delta_H', min_value=7 / 8, desc=delta_H_desc)
+        self.delta_C_param = GenericParam(name='delta_C', min_value=7 / 6, desc=delta_C_desc)
+        self.xi_C_param = GenericParam(name='xi_C', min_value=7 / 10, desc=xi_C_desc)
         self.max_R0_param = GenericParam(name='max_R0', min_value=2, max_value=2.5, desc=max_R0_desc, group='advanced',
                                          show_label=True)
         self.delta_param = GenericParam(name='delta', min_value=0, max_value=0.3, desc=delta_desc, group='advanced',
@@ -53,15 +54,18 @@ class SeirCovidModel:
                                               is_int=True, desc=sd_duration_desc, group='static_social_distancing')
         self.sd_reduction_param = GenericParam(name='sd_reduction', min_value=0, max_value=1, default_value=0.5,
                                                desc=sd_reduction_desc, group='static_social_distancing', is_pct=True)
-        self.dynamic_sd_cutoff_param = GenericParam(name='dynamic_sd_cutoff', min_value=20, max_value=100,
-                                                    is_int=True, default_value=38, desc=dynamic_sd_cutoff_desc,
-                                                    group='dynamic_social_distancing')
+        self.dynamic_sd_on_param = GenericParam(name='dynamic_sd_on', min_value=20, max_value=40,
+                                                is_int=True, default_value=38, desc=dynamic_sd_on_desc,
+                                                group='dynamic_social_distancing')
+        self.dynamic_sd_off_param = GenericParam(name='dynamic_sd_off', min_value=5, max_value=20,
+                                                 is_int=True, default_value=10, desc=dynamic_sd_off_desc,
+                                                 group='dynamic_social_distancing')
 
         self.params = [self.p_R_param, self.p_H_param, self.p_C_param, self.nu_param, self.gamma_param,
                        self.delta_H_param, self.delta_C_param, self.xi_C_param, self.max_R0_param,
                        self.delta_param, self.phi_param,
                        self.start_sd_param, self.sd_duration_param, self.sd_reduction_param,
-                       self.dynamic_sd_cutoff_param]
+                       self.dynamic_sd_on_param, self.dynamic_sd_off_param]
 
         self.p_R = self.p_R_param.default_value
         self.p_H = self.p_H_param.default_value
@@ -77,7 +81,9 @@ class SeirCovidModel:
         self.start_sd = int(self.start_sd_param.default_value)
         self.sd_duration = int(self.sd_duration_param.default_value)
         self.sd_reduction = self.sd_reduction_param.default_value
-        self.dynamic_sd_cutoff = self.dynamic_sd_cutoff_param.default_value
+        self.dynamic_sd_on = self.dynamic_sd_on_param.default_value
+        self.dynamic_sd_off = self.dynamic_sd_off_param.default_value
+        self.in_dynamic_sd = False
 
         self.t = range(0, self.num_weeks + 1)
         self.t_weeks = [self.start_date + timedelta(weeks=t_i) for t_i in self.t]
@@ -117,23 +123,27 @@ class SeirCovidModel:
 
         if self.static_sd and self.start_sd < t < self.start_sd + self.sd_duration:
             beta_t = self._adjust_R0(beta_t)
+
         if self.dynamic_sd:
-            # If social distancing should be triggered...
-            if infected > self.dynamic_sd_cutoff and (self.static_sd and (t < self.start_sd or t > self.start_sd + self.sd_duration)):
-                # Update R0
+            if self.in_dynamic_sd and infected > self.dynamic_sd_off:
                 beta_t = self._adjust_R0(beta_t)
+            elif self.in_dynamic_sd and infected <= self.dynamic_sd_off:
+                self.in_dynamic_sd = False
+            elif not self.in_dynamic_sd and infected > self.dynamic_sd_on:
+                beta_t = self._adjust_R0(beta_t)
+                self.in_dynamic_sd = True
 
         dSdt = -beta_t * (I_R + I_H + I_C) * S / self.pop_size
-        dEdt = -dSdt - nu*E
-        dI_Rdt = nu*p_R*E - gamma*I_R
-        dI_Hdt = nu*p_H*E - gamma*I_H
-        dI_Cdt = nu*p_C*E - gamma*I_C
-        dR_Rdt = gamma*I_R
-        dH_Hdt = gamma*I_H - delta_H*H_H
-        dH_Cdt = gamma*I_C - delta_C*H_C
-        dR_Hdt = delta_H*H_H
-        dC_Cdt = delta_C*H_C - xi_C*C_C
-        dR_Cdt = xi_C*C_C
+        dEdt = -dSdt - nu * E
+        dI_Rdt = nu * p_R * E - gamma * I_R
+        dI_Hdt = nu * p_H * E - gamma * I_H
+        dI_Cdt = nu * p_C * E - gamma * I_C
+        dR_Rdt = gamma * I_R
+        dH_Hdt = gamma * I_H - delta_H * H_H
+        dH_Cdt = gamma * I_C - delta_C * H_C
+        dR_Hdt = delta_H * H_H
+        dC_Cdt = delta_C * H_C - xi_C * C_C
+        dR_Cdt = xi_C * C_C
         return dSdt, dEdt, dI_Rdt, dI_Hdt, dI_Cdt, dR_Rdt, dH_Hdt, dH_Cdt, dR_Hdt, dC_Cdt, dR_Cdt
 
     def solve(self):

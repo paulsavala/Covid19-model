@@ -70,7 +70,6 @@ def update_seir_graph(*params):
     total_critical = I_C + H_C + C_C
 
     max_critical_index = np.where(total_critical == max(total_critical))[0][0]
-    max_critical_value = total_critical[max_critical_index]
     critical_above_capacity = np.sum(total_critical > 0.89)
     avg_needed_beds = np.round(np.average(total_critical[np.where(total_critical > 0.89)]), 1)
 
@@ -130,6 +129,12 @@ def update_seir_graph(*params):
 
     figure.update_layout(shapes=shapes, annotations=annotations)
 
+    if max(total_infected) < 100:
+        infected_range = [0, 100]
+        critical_range = [0, 50]
+    else:
+        infected_range = [0, max([1.1*(max(I_R + I_H + I_C)), 1000])]
+        critical_range = [0, max([1.1*(max(I_C + H_C + C_C)), 60])]
     figure.update_yaxes(title_text=primary_y_title,
                         tickfont=dict(
                             color="blue"
@@ -137,7 +142,7 @@ def update_seir_graph(*params):
                         secondary_y=False,
                         showgrid=False,
                         zerolinecolor='black',
-                        range=[0, max([1.1*(max(I_R + I_H + I_C)), 1000])])
+                        range=infected_range)
     figure.update_yaxes(title_text=f"{primary_y_title} (critical)",
                         tickfont=dict(
                             color="red"
@@ -145,7 +150,7 @@ def update_seir_graph(*params):
                         secondary_y=True,
                         showgrid=False,
                         zerolinecolor='black',
-                        range=[0, max([1.1*(max(I_C + H_C + C_C)), 60])])
+                        range=critical_range)
     figure.update_xaxes(title_text='Weeks',
                         showgrid=True,
                         gridcolor='gray',
@@ -198,4 +203,4 @@ def toggle_advanced_collapse(n, is_open):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
