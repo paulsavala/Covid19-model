@@ -55,7 +55,9 @@ param_names = [p.name for p in tunable_params] + ['sd_switches']
 
 
 @app.callback(
-    Output(f'{seir_model_view.name}-graph', 'figure'),
+    [Output(f'{seir_model_view.name}-graph', 'figure')] +
+    [Output(f'{seir_model_view.name}-static_social_distancing-collapse', 'is_open'),
+     Output(f'{seir_model_view.name}-dynamic_social_distancing-collapse', 'is_open')],
     [Input(f'{seir_model_view.name}-{p.name}-slider', 'value') for p in tunable_params] +
     [Input(f'{seir_model_view.name}-social_distancing-switches-input', 'value')]
 )
@@ -65,6 +67,24 @@ def update_seir_graph(*params):
         if hasattr(seir_model, k):
             setattr(seir_model, k, v)
 
+    # Open and collapse as necessary
+    static_sd = False
+    dynamic_sd = False
+
+    static_is_open = False
+    dynamic_is_open = False
+
+    if 'static' in params_dict['sd_switches']:
+        static_sd = True
+        static_is_open = True
+    if 'dynamic' in params_dict['sd_switches']:
+        dynamic_sd = True
+        dynamic_is_open = True
+
+    seir_model.static_sd = static_sd
+    seir_model.dynamic_sd = dynamic_sd
+
+    # Compute the new values for the graph
     S, E, I_R, I_H, I_C, R_R, H_H, H_C, R_H, C_C, R_C = seir_model.solve()
     total_infected = I_R + I_H + I_C
     total_critical = I_C + H_C + C_C
@@ -159,35 +179,35 @@ def update_seir_graph(*params):
 
     figure.update_layout(plot_bgcolor='white')
 
-    return figure
+    return figure, static_is_open, dynamic_is_open
 
 
 # Toggle the different types of social distancing
-@app.callback(
-    [Output(f'{seir_model_view.name}-static_social_distancing-collapse', 'is_open'),
-     Output(f'{seir_model_view.name}-dynamic_social_distancing-collapse', 'is_open')],
-    [Input(f'{seir_model_view.name}-social_distancing-switches-input', 'value')]
-)
-def toggle_sd_method(values):
-    static_sd = False
-    dynamic_sd = False
-
-    static_is_open = False
-    dynamic_is_open = False
-
-    if 'static' in values:
-        static_sd = True
-        static_is_open = True
-    if 'dynamic' in values:
-        dynamic_sd = True
-        dynamic_is_open = True
-
-    seir_model.static_sd = static_sd
-    seir_model.dynamic_sd = dynamic_sd
-
-    update_seir_graph()
-
-    return static_is_open, dynamic_is_open
+# @app.callback(
+#     [Output(f'{seir_model_view.name}-static_social_distancing-collapse', 'is_open'),
+#      Output(f'{seir_model_view.name}-dynamic_social_distancing-collapse', 'is_open')],
+#     [Input(f'{seir_model_view.name}-social_distancing-switches-input', 'value')]
+# )
+# def toggle_sd_method(values):
+#     static_sd = False
+#     dynamic_sd = False
+#
+#     static_is_open = False
+#     dynamic_is_open = False
+#
+#     if 'static' in values:
+#         static_sd = True
+#         static_is_open = True
+#     if 'dynamic' in values:
+#         dynamic_sd = True
+#         dynamic_is_open = True
+#
+#     seir_model.static_sd = static_sd
+#     seir_model.dynamic_sd = dynamic_sd
+#
+#     update_seir_graph()
+#
+#     return static_is_open, dynamic_is_open
 
 
 # Toggle the advanced parameters
