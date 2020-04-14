@@ -16,7 +16,6 @@ reported.
         
 #### The model
 The model shown here is based on the paper 
-["Social distancing strategies for curbing the COVID-19 epidemic"]
-(https://www.medrxiv.org/content/10.1101/2020.03.22.20041079v1.article-info)
+["Social distancing strategies for curbing the COVID-19 epidemic"](https://www.medrxiv.org/content/10.1101/2020.03.22.20041079v1.article-info)
 by the researchers Kissler, Tedijanto, Lipsitch and Grad at Harvard. I am in no way associated with these
 researchers. For me about me, see my [LinkedIn profile](https://www.linkedin.com/in/paul-savala-ph-d-61153193/)
