@@ -1,5 +1,5 @@
 #### How to use this app
-This app is currently [hosted on Heroku](https://covid19-social-distancing.herokuapp.com/). If you want to explore the code,
+This app is currently [hosted on Heroku](https://covid19-social-distancing.herokuapp.com/). **Hosted on a free Heroku server, so please be patient with inital load time!** If you want to explore the code,
 I recommend starting with `app.py`.
 
 #### Description
